@@ -1,0 +1,180 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+// Zachary Purkiss, J Moriancumer Esguerra, Sprint 1
+// 14/09/2021
+// Version: 1.0
+// Astronomical Processing
+// Program uses an array of 24 integers to sort, search, add, delete, edit and auto fill list
+
+namespace Astronomical_Processing
+{
+    public partial class AstronomicalProcessing : Form
+    {
+        public AstronomicalProcessing()
+        {
+            InitializeComponent();
+        }
+
+        static int max = 24; 
+        int nextEmptyTask = 24;
+        int[] listData = new int[max];
+
+
+        //Displays listData in list box
+        private void DisplayList()
+        {
+            ListBoxItems.Items.Clear();
+            for (int x = 0; x < nextEmptyTask; x++)
+            {
+                ListBoxItems.Items.Add(listData[x]);
+            }
+        }
+
+        //Sorts listData using a bubble sort
+        private void ButtonSort_Click(object sender, EventArgs e)
+        {
+            for (int i = 0; i < nextEmptyTask; i++)
+            {
+                for (int j = i + 1; j < nextEmptyTask; j++)
+                {
+                    if (listData[i] > listData[j])
+                    {
+                        int temp = listData[i];
+                        listData[i] = listData[j];
+                        listData[j] = temp;
+                    }
+                }
+            }
+            DisplayList();
+        }
+
+        //Searches for text box input using a binary search
+        private void ButtonSearch_Click(object sender, EventArgs e)
+        {
+            Array.Sort(listData, 0, nextEmptyTask);
+            DisplayList();
+            if (!string.IsNullOrEmpty(TextBoxItem.Text))
+            {
+                int target = int.Parse(TextBoxItem.Text);
+
+                if (target < 100 && target > 9)
+                {
+
+                    int min = 0, max = nextEmptyTask - 1, mid = 0;
+                    bool found = false;
+
+                    while (min <= max)
+                    {
+                        mid = (min + max) / 2;
+                        if (target == listData[mid])
+                        {
+                            found = true;
+                            break;
+                        }
+                        else if (target < listData[mid])
+                            max = mid - 1;
+                        else
+                            min = mid + 1;
+                    }
+                    if (found)
+                        MessageBox.Show("Found at element [" + mid + "]");
+                    else
+                        MessageBox.Show("Not Found");
+                }
+                else
+                    MessageBox.Show("Number is outside of range!");
+            }
+            else
+                MessageBox.Show("No number entered in text box!");
+        }
+
+        //Fills listData with random integers between 10-99 inclusive
+        private void ButtonFillData_Click(object sender, EventArgs e)
+        {
+            Random rnd = new Random();
+
+            for (int i = 0; i < 24; i++) 
+            {
+                listData[i] = rnd.Next(10, 100);
+            }
+
+            DisplayList();
+        }
+
+        // Make sure only integers can be typed in the text box
+        private void TextBoxItem_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            e.Handled = !char.IsDigit(e.KeyChar) && !char.IsControl(e.KeyChar);
+        }
+
+        //Deletes selected item from listData
+        private void ButtonDeleteItem_Click(object sender, EventArgs e)
+        {
+            if (ListBoxItems.SelectedIndex != -1)
+            {
+                string currentItem = ListBoxItems.SelectedItem.ToString();
+                int taskIndex = ListBoxItems.FindString(currentItem);
+                listData[taskIndex] = listData[nextEmptyTask - 1];
+                Array.Sort(listData, 0, nextEmptyTask);
+                nextEmptyTask--;
+                DisplayList();
+            }
+            else
+                MessageBox.Show("No task selected");
+        }
+
+        //Adds input item to listData provided there is space
+        private void ButtonAddItem_Click(object sender, EventArgs e)
+        {
+            if (!string.IsNullOrEmpty(TextBoxItem.Text))
+            {
+                int number = int.Parse(TextBoxItem.Text);
+
+                if (number > 9 && number < 100 && nextEmptyTask < 24)
+                {
+                    listData[nextEmptyTask] = int.Parse(TextBoxItem.Text);
+                    nextEmptyTask++;
+                    Array.Sort(listData, 0, nextEmptyTask);
+                    DisplayList();
+                    TextBoxItem.Clear();
+                }
+                else if (number < 10 || number > 99)
+                    MessageBox.Show("Input number is outside 10-99 range!");
+                else
+                    MessageBox.Show("Array is already full!");
+            }
+            else
+                MessageBox.Show("Textbox is empty!");
+        }
+
+        //Edits selected item to new input from textbox
+        private void ButtonEditItem_Click(object sender, EventArgs e)
+        {
+            if (!string.IsNullOrEmpty(TextBoxItem.Text))
+            {
+                string currentItem = ListBoxItems.SelectedItem.ToString();
+                int taskIndex = ListBoxItems.FindString(currentItem);
+                listData[taskIndex] = int.Parse(TextBoxItem.Text);
+                DisplayList();
+            }
+            else
+                MessageBox.Show("No Text Selected");
+        }
+
+        //Displays selected list box item in text box
+        private void ListBoxItems_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            string currentSelection = ListBoxItems.SelectedItem.ToString();
+
+            TextBoxItem.Text = currentSelection;
+        }
+    }
+}
